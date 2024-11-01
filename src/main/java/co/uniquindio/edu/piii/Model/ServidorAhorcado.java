@@ -25,29 +25,25 @@ public class ServidorAhorcado extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
 
-        // Campo de texto para mostrar la palabra oculta
         campoPalabra = new JTextField(20);
         campoPalabra.setEditable(false);
         add(campoPalabra);
 
-        // Botón para seleccionar una palabra al azar
         botonSeleccionarPalabra = new JButton("Seleccionar palabra");
         add(botonSeleccionarPalabra);
 
-        // Acción del botón para seleccionar y mostrar la palabra oculta
         botonSeleccionarPalabra.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 seleccionarPalabra();
+                enviarActualizacionATodos(); // Envía los asteriscos a todos los clientes después de seleccionar la palabra
             }
         });
 
-        // Inicializar lista de palabras y clientes
         palabras = new ArrayList<>();
         clientes = new CopyOnWriteArrayList<>();
         cargarPalabras();
 
-        // Iniciar el servidor en un hilo separado
         new Thread(this::iniciarServidor).start();
     }
 
@@ -65,7 +61,6 @@ public class ServidorAhorcado extends JFrame {
         campoPalabra.setText(estadoActual.toString());
     }
 
-    // Inicia el servidor y acepta conexiones de clientes
     private void iniciarServidor() {
         try (ServerSocket serverSocket = new ServerSocket(12345)) {
             System.out.println("Servidor iniciado en el puerto 12345.");
@@ -73,29 +68,33 @@ public class ServidorAhorcado extends JFrame {
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("Cliente conectado.");
-                clientes.add(new PrintWriter(socket.getOutputStream(), true));
+                PrintWriter clienteWriter = new PrintWriter(socket.getOutputStream(), true);
+                clientes.add(clienteWriter);
 
-                // Crear un nuevo hilo para manejar al cliente
-                new Thread(() -> manejarCliente(socket)).start();
+                new Thread(() -> manejarCliente(socket, clienteWriter)).start();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Maneja la comunicación con cada cliente
-    private void manejarCliente(Socket socket) {
+    private void manejarCliente(Socket socket, PrintWriter clienteWriter) {
         try (BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             String letra;
             while ((letra = entrada.readLine()) != null) {
                 procesarLetra(letra.charAt(0));
+                if (!estadoActual.toString().contains("*")) {
+                    clienteWriter.println("Fin del juego. ¡Ganaste!"); // Mensaje final al cliente
+                    clienteWriter.close();
+                    socket.close(); // Cierra la conexión del cliente
+                    break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Procesa la letra enviada por el cliente y actualiza el estado actual de la palabra
     private synchronized void procesarLetra(char letra) {
         boolean letraEncontrada = false;
         for (int i = 0; i < palabraOculta.length(); i++) {
@@ -107,26 +106,19 @@ public class ServidorAhorcado extends JFrame {
         campoPalabra.setText(estadoActual.toString());
         enviarActualizacionATodos();
 
-        // Si la palabra fue adivinada, cierra las conexiones
         if (!estadoActual.toString().contains("*")) {
             finalizarJuego();
         }
     }
 
-    // Envía el estado actual de la palabra a todos los clientes
     private void enviarActualizacionATodos() {
         for (PrintWriter cliente : clientes) {
             cliente.println(estadoActual.toString());
         }
     }
 
-    // Finaliza el juego y cierra las conexiones
     private void finalizarJuego() {
         enviarActualizacionATodos();
-        for (PrintWriter cliente : clientes) {
-            cliente.close();
-        }
-        clientes.clear();
         System.out.println("Juego finalizado.");
     }
 
