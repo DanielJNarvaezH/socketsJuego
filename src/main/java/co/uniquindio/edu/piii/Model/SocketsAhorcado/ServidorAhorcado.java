@@ -1,4 +1,4 @@
-package co.uniquindio.edu.piii.Model;
+package co.uniquindio.edu.piii.Model.SocketsAhorcado;
 
 import javax.swing.*;
 import java.awt.*;
@@ -96,6 +96,7 @@ public class ServidorAhorcado extends JFrame {
     }
 
     private synchronized void procesarLetra(char letra) {
+        @SuppressWarnings("unused")
         boolean letraEncontrada = false;
         for (int i = 0; i < palabraOculta.length(); i++) {
             if (palabraOculta.charAt(i) == letra) {

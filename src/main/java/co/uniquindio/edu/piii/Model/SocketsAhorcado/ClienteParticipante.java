@@ -1,4 +1,4 @@
-package co.uniquindio.edu.piii.Model;
+package co.uniquindio.edu.piii.Model.SocketsAhorcado;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -23,7 +23,7 @@ public class ClienteParticipante extends Application {
     private PrintWriter writer;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(@SuppressWarnings("exports") Stage primaryStage) {
         primaryStage.setTitle("Ahorcado - Participante");
 
         Label palabraLabel = new Label("Palabra:");
