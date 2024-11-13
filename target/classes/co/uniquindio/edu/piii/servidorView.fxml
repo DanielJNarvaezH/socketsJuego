@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ClienteController">
+    <children>
+        <Label text="Registro de Tanqueo"/>
+        <TextField fx:id="clienteIdField" promptText="ID del Cliente"/>
+        <TextField fx:id="tipoVehiculoField" promptText="Tipo de Vehículo"/>
+        <TextField fx:id="cantidadGalonesField" promptText="Cantidad de Gasolina"/>
+        <Button text="Enviar Registro" onAction="#enviarRegistro"/>
+        <Label fx:id="mensajeLabel"/>
+    </children>
+</VBox>
